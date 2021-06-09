@@ -6,16 +6,16 @@ from output import pub_key, cipher
 def create_lattice(b, c):
     """create_lattice
 
-    CLOS法で使う格子行列を生成する関数
+    CLOS法で使う基底行列を生成する関数
 
     Args:
         b: 公開鍵
         c: 暗号文
 
     Returns:
-        B: 格子行列    
+        B: 基底行列    
     """
-    # 格子行列のサイズ
+    # 基底行列のサイズ
     N = len(b) + 1
     # 行列生成のときに使うリスト
     m_list = [[0 for _ in range(N)] for _ in range(N)]
@@ -26,7 +26,7 @@ def create_lattice(b, c):
         m_list[N-1][i+1] = -1
     # -c
     m_list[N-1][0] = -c
-    # 格子行列を作成
+    # 基底行列を作成
     B = matrix(ZZ, m_list)
 
     return B
@@ -38,7 +38,7 @@ def valid_vector(llled):
     左端が0、それ以外が+1,-1のベクトルを返す関数
 
     Args:
-        llled: LLL()が実行されている格子行列
+        llled: LLL()が実行されている基底行列
 
     Returns:
         v: 左端が0、それ以外が+1,-1のベクトル 
