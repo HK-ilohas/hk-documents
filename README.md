@@ -6,7 +6,7 @@
 
 勉強会でSECCON Beginners CTF 2021のCrypto問題を解説するときに使用するスライドとsolver．
 
-# Knapsack_CLOS
+## Knapsack_CLOS
 
 ナップサック暗号とCLOS法による解読についてのノート（手書き）．
 
