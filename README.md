@@ -10,10 +10,6 @@
 
 ナップサック暗号とCLOS法による解読についてのノート（手書き）．
 
-## WSL_WindowsTerminal
-
-部活用で作成したWSLとWindows Ternimalの資料．
-
 ## CASL2_Memo
 
 アセンブリIの遠隔授業中に作成したCASL2のメモ．
