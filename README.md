@@ -2,6 +2,10 @@
 
 過去に作成した資料やメモなどを置いています．
 
+## 卒論\_latex_template
+
+本科卒業論文の LaTeX テンプレート．使用実績多数あり．
+
 ## BPSW_PRIME
 
 BPSW 素数判定法についての解説 PDF．ほとんど同じ内容のものを [Mathlog](https://mathlog.info/articles/LjKpWKOqjMbFDKSpu1ST) でも公開しています。

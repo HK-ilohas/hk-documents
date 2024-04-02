@@ -1,0 +1,111 @@
+\documentclass[uplatex]{jsarticle}
+\usepackage[top=24truemm,bottom=25truemm,left=20truemm,right=20truemm]{geometry}
+% 図を現在位置に挿入
+\usepackage{here}
+% 数式
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{empheq}
+\usepackage{amsthm}
+% 画像関連
+\usepackage[dvipdfmx]{graphicx}
+% フォント
+\usepackage{newtxtext,newtxmath}
+% URL
+\usepackage{url}
+% 目次
+\usepackage[dvipdfmx]{hyperref}
+\usepackage{pxjahyper}
+\hypersetup{
+    setpagesize=false,
+    bookmarksnumbered=true,
+    bookmarksopen=true,
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=black
+}
+% 段組み
+\usepackage[]{multicol}
+% cite
+\usepackage{cite}
+% タイトルのサイズ
+\usepackage{titlesec}
+\titleformat{\section}% command
+    [block]% shape
+    {\sffamily\large}% format
+    {\thesection}% label
+    %{1.8em}% sep
+    {1em}% sep
+    {}% before-code
+\titlespacing{\section}
+    {0pt}% left
+    {4pt}% before-sep
+    {4pt}% after-sep
+\titleformat{\subsection}% command
+    [block]% shape
+    {\sffamily\large}% format
+    {\thesubsection}% label
+    {1em}% sep
+    {}% before-code
+\titlespacing{\subsection}
+    {0pt}% left
+    {4pt}% before-sep
+    {4pt}% after-sep
+\titleformat{\subsubsection}% command
+    [block]% shape
+    {\sffamily\large}% format
+    {\thesubsection}% label
+    {1em}% sep
+    {}% before-code
+\titlespacing{\subsubsection}
+    {0pt}% left
+    {4pt}% before-sep
+    {4pt}% after-sep
+
+% 数式の上下のスペースの変更
+\AtBeginDocument{
+    \abovedisplayskip     =0.3\abovedisplayskip
+    \abovedisplayshortskip=0.3\abovedisplayshortskip
+    \belowdisplayskip     =0.3\belowdisplayskip
+    \belowdisplayshortskip=0.3\belowdisplayshortskip}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+    \lhead{\fontsize{8.6truept}{8.6truept}\selectfont{令和5年度　卒業研究論文概要}} %ヘッダ左
+    \rhead{\fontsize{8.6truept}{8.6truept}\selectfont{高知工業高等専門学校 \,ソーシャルデザイン工学科}} %ヘッダ右．コンパイルした日付を表示
+    \cfoot{} %フッタ中央
+\renewcommand{\headrulewidth}{0.0pt}
+
+\renewcommand{\baselinestretch}{0.93}
+
+\begin{document}
+    % textlint-disable
+    \begin{center}
+        \fontsize{14.5truept}{14.5truept}\selectfont{\textgt{\textsf{X}の運用方法}}
+
+        \vspace{19pt}
+
+        {\large dxxxxx　イーロン マスク 【 立川研究室 】}
+
+        \vspace{8pt}
+    \end{center}
+    % textlint-enable
+
+    \begin{multicols}{2}
+        \section{序論}
+        
+        本研究では，Xの運用方法について検討する．
+
+        \section{結論}
+
+        Xをやめて，外に出た方が良いことが判明した．
+
+        % ==bibtex==
+        % \bibliographystyle{junsrt}
+        % % \fontsize{9.5pt}{0.55cm}\selectfont{
+        % \bibliography{filename}
+        % % }
+        \newpage
+    \end{multicols}
+\end{document}
