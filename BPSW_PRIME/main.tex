@@ -1,0 +1,293 @@
+\documentclass[uplatex]{jsarticle}
+\usepackage[utf8]{inputenc}
+% マージンの設定
+\usepackage[left=30mm,right=30mm,top=30mm,bottom=30mm]{geometry}
+% \renewcommand{\baselinestretch}{1.15}
+% 図を現在位置に挿入
+\usepackage{here}
+% 文字コード関連の設定
+\usepackage{otf}
+% 数式
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{empheq}
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem{dfn}{Definition}[section]
+\newtheorem{prop}[dfn]{Proposition}
+\newtheorem{lem}[dfn]{Lemma}
+\newtheorem{thm}[dfn]{Theorem}
+\newtheorem{cor}[dfn]{Corollary}
+\newtheorem{rem}[dfn]{Remark}
+\newtheorem{fact}[dfn]{Fact}
+\renewcommand{\qedsymbol}{$\blacksquare$}
+% フォント
+\usepackage{lmodern}
+% 画像関連
+\usepackage[dvipdfmx]{graphicx}
+% URL
+\usepackage{url}
+% 物理
+\usepackage{physics}
+
+% 目次
+\usepackage[dvipdfmx]{hyperref}
+\usepackage{pxjahyper}
+\usepackage{cite}
+\hypersetup{
+    setpagesize=false,
+    bookmarksnumbered=true,
+    bookmarksopen=true,
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=black
+}
+
+\title{Baillie-PSW素数判定法}
+\author{Koki Hamada}
+\date{\today}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+このレポートは\cite{baillie2021strengthening}の記述を基にBaillie-PSW素数判定法について解説したものである．
+Baillie-PSW素数判定法とは，底2のミラー・ラビン素数判定法とリュカの強素数判定法を組み合わせた手法である．
+このアルゴリズムは高速であり，擬素数の割合が相当少ないことが予想されている．
+そのため，最近のソフトウェアにおける素数判定法の実装でよく用いられている．
+
+\end{abstract} 
+
+\section{準備}
+
+\subsection{記法}
+
+\begin{dfn}
+    整数$a, b$の最大公約数を$\gcd(a,b)$と書く．
+\end{dfn}
+
+% \begin{dfn}
+%     整数$a$が整数$b$を割り切るとき，$a \mid b$と書く．割り切らない場合は$a \nmid b$と書く．
+% \end{dfn}
+
+% \begin{dfn}
+%     $\mathbb{Z}_N$を$\mathbb{Z}_N = \{0, 1, \dots, N-1\}$とする．
+% \end{dfn}
+
+% \begin{dfn}
+%     $\mathbb{Z}^{*}_N$を$\mathbb{Z}^{*}_N=\{x \mid x \in \mathbb{Z}_N \land \gcd(x,N)=1\}$とする．
+% \end{dfn}
+
+\subsection{平方剰余とルジャンドル記号，ヤコビ記号}
+
+\begin{dfn}[平方剰余]
+$n$を正の整数\footnote{たとえば\cite{stein2008elementary,takagi}では法$n$を奇素数として平方剰余を定義しているが，平方剰余は法が素数である必要はない．しかし，ルジャンドル記号は素数である必要があるので，そういった利便性のために素数で定義されることがある．}とする．法$n$の下で，正の整数$a$が\textbf{平方剰余（quadratic residue）}であるとは，合同方程式$x^2 \equiv a \pmod{n}$の解が存在することである．存在しない場合，平方非剰余（quadratic nonresidue）であるという．
+\end{dfn}
+
+たとえば，法5の下では
+\begin{align*}
+    1^2\equiv1, \quad 2^2\equiv4, \quad 3^2\equiv4, \quad 4^2\equiv1, \pmod{5}
+\end{align*}
+なので，1と4は平方剰余，2と3は平方非剰余である．
+
+特に法が奇素数のとき，平方剰余は様々な性質を持つ．このことを表すために次の記法を導入する．
+
+\begin{dfn}[ルジャンドル記号]
+    $p$を奇素数とする．正の整数$a$について，
+    \begin{equation}
+        \left(\frac{a}{p}\right)= \begin{cases}0 & \text { if } \operatorname{gcd}(a, p) \neq 1, \\ +1 & \text { if } a \text { is a quadratic residue,} \\ -1 & \text { if } a \text { is a quadratic nonresidue, }\end{cases}
+    \end{equation}
+    と定義する．
+    この$(a/p)$を\textbf{ルジャンドル記号（Legendre Symbol）}と呼ぶ．
+\end{dfn}
+
+たとえば，$p=5$のとき，
+\begin{align*}
+    \left(\frac{1}{5}\right)=1, \quad\left(\frac{2}{5}\right)=-1, \quad\left(\frac{3}{5}\right)=-1, \quad\left(\frac{4}{5}\right)=1, \quad\left(\frac{5}{5}\right)=0,
+\end{align*}
+となる．
+
+ルジャンドル記号は法を奇素数に制限した．
+それを正の奇数に拡張したものがヤコビ記号である．
+
+\begin{dfn}[ヤコビ記号]
+    $n$を正の奇数とし，$n = \prod_{i=1}^{k} (p_i)^{e_i}$（$p_i$は素数）と表示する．正の整数$a$について，
+    \begin{align}
+        \left(\frac{a}{n}\right)=\prod_{i=1}^k\left(\frac{a}{p_i}\right)^{e_i}=\left(\frac{a}{p_1}\right)^{e_1}\left(\frac{a}{p_2}\right)^{e_2}\cdots\left(\frac{a}{p_k}\right)^{e_k},
+    \end{align}
+    と定義する（右辺はルジャンドル記号である）．
+    この$(a/n)$を\textbf{ヤコビ記号（Jacobi Symbol）}と呼ぶ．
+\end{dfn}
+
+$n$が奇素数の場合はルジャンドル記号と一致する．
+ヤコビ記号は$O(M(n)\log n)$で計算できることが知られている\cite{brent2010m}．
+以下，$(a/n)$はヤコビ記号を表すものとする．
+
+\section{従来の素数判定法}
+
+\subsection{フェルマーテスト}
+
+法が素数のとき，\textbf{フェルマーの小定理（Fermat's little theorem）}という強力な定理が成り立つ．
+
+\begin{thm}[フェルマーの小定理]
+    $p$を素数とする．
+    $\gcd(a,p)=1$を満たす任意の正の整数$a$について，$a^{p-1} \equiv 1 \pmod{p}$が成り立つ．
+\end{thm}
+
+一般にフェルマーの小定理の逆は成立しない．
+実際，$2^{561-1} \equiv 4^{561-1} \equiv \cdots \equiv 1 \pmod{561}$であるが，$561=3 \times 11 \times 17$は合成数である．このように，$\gcd(a,n)=1$となる任意の整数$a$について，$a^{n-1}\equiv1\pmod{n}$を満たす合成数$n$をカーマイケル数（Carmichael's number）と呼び，無数に存在する．
+実際，$10^{21}$までのカーマイケル数は$20{,}138{,}200$個である\cite{pinch2007carmichael}．
+とはいえ，こういったフェルマーの小定理の逆を満たす合成数が稀であることを期待して，次のような確率的素数判定法が提案された．
+
+\begin{dfn}[フェルマーテスト]
+    正の奇数$n$を素数判定の対象とする．
+    $\gcd(a,n)=1$を満たす正の整数$a$をランダムに選び，
+    $a^{n-1}\not\equiv1\pmod{n}$であれば合成数，そうでなければ底$a$の\textbf{確率的素数 (base-$a$ probable prime）}とする．
+\end{dfn}
+
+上述の通り，フェルマーテストを潜り抜ける合成数$n$は無数に存在する．
+この合成数$n$を判定時の整数$a$を用いて，底$a$の\textbf{擬素数（base-$a$ pseudoprime）}という．
+フェルマーテストは後述の確率的素数判定法と比べると精度が悪いので，実際に用いられることは滅多にない．
+
+\subsection{ミラー・ラビン素数判定法}
+
+\textbf{ミラー・ラビン素数判定法（Miller-Rabin primality test）}は次の定理に基づいた確率的素数判定法である．
+
+\begin{thm}
+    $p$が素数であれば，$p-1=2^sd$（ただし，$d$は奇数）と分解でき，$\gcd(a,p)=1$である任意の整数$a$に対して，次のいずれかのことが成り立つ．
+    \begin{itemize}
+        \item $a^d \equiv 1 \pmod{p}$が成立する．
+        \item $a^{2^rd} \equiv -1 \pmod{p}$となる$0 \leq r < s$が存在する．
+    \end{itemize}
+\end{thm}
+
+ミラー・ラビン素数判定法はこの定理の対偶を利用して，合成数を篩にかける．
+
+\begin{dfn}[ミラー・ラビン素数判定法]
+    正の奇数$n$を素数判定の対象とする．
+    $\gcd(a,n)=1$を満たす正の整数$a$をランダムに選び，$a^d \not\equiv 1 \pmod{n}$かつ任意の整数$r \in [0, s)$について$a^{2^rd} \not\equiv -1 \pmod{n}$であれば合成数と判定する．
+    もし，成り立たなければ，底$a$の\textbf{強確率的素数（base-$a$ strong probable prime）}とする．
+\end{dfn}
+
+フェルマーテストと違って「強（strong）」がついているのは，素数の確率がより高いことを意味する．
+同様に，素数と誤って判定されてしまう合成数$n$を，底$a$の\textbf{強擬素数（base-$a$ strong pseudoprime）}という．
+精度と計算効率の良さから，実用上はミラー・ラビン素数判定法が採用されることが多い．
+ところが，最近ではこのミラー・ラビン素数判定法と後述のリュカの強素数判定法を組み合わせたBaillie-PSW素数判定法が使われることが増えている．
+
+\section{Baillie-PSW素数判定法}
+
+\subsection{リュカ数列とリュカの素数判定法}
+
+\begin{dfn}[リュカ数列]
+    
+整数$D, P, Q$を$P>0$, $D = P^2 - 4Q \ne 0$を満たすように選ぶ．
+$U_0=0, U_1=1, V_0=2, V_1=P$と定義する．
+パラメータ$(P, Q)$の\textbf{リュカ数列（Lucas Sequences）}$\{U_k\}$, $\{V_k\}$ ($k\geq2$)は次の式で再帰的に定義される．
+\begin{align}
+    U_k &= PU_{k-1} - QU_{k-2},\\
+    V_k &= PV_{k-1} - QV_{k-2}.
+\end{align}
+
+\end{dfn}
+
+リュカ数列と素数に対して，次の定理が成り立つ．
+
+\begin{thm}
+    $p$を素数とする．パラメータ$(P, Q)$のリュカ数列$\{U_k\}, \{V_k\}$に対して，$\gcd(p,Q)=1$であれば，
+    \begin{align}
+        U_{p-(D/p)} & \equiv 0 \pmod{p}, \\
+        V_{p-(D/p)} & \equiv 2 Q^{(1-(D / p)) / 2} \pmod{p}, \quad \text { provided } \gcd(p, D)=1, \\
+        U_p & \equiv(D / p) \pmod{p}, \label{eq:dame1} \\
+        V_p & \equiv P \pmod{p}, \label{eq:dame2}
+    \end{align}
+    が成り立つ．
+    もし，$\gcd(p, 2PQD)=1$であれば，これらの合同式のうち2つは他の2つを包含する．
+\end{thm}
+
+リュカ数列のパラメータを$(D/p)=-1$となるように取ると，この定理は次のように書ける．
+\begin{align}
+    U_{p+1} &\equiv 0 \pmod{p}, \\
+    V_{p+1} &\equiv 2Q \pmod{p}.\label{eq:Vprime}
+\end{align}
+これらの式から，フェルマーテストと同様の論法でリュカの素数判定法を定義する．
+ちなみに，式(\ref{eq:dame1}), (\ref{eq:dame2})は合成数であっても成立するケースが多いので素数判定では使われない．
+
+\begin{dfn}[リュカの素数判定法]
+    正の奇数$n$を素数判定の対象とする．
+    リュカ数列$\{U_k\}, \{V_k\}$のパラメータを$\gcd(n, Q)=1$かつ$(D/n)=-1$となるように選択する．
+    このとき，$U_{n+1} \not\equiv 0 \pmod{n}$であれば合成数，そうでなければパラメータ$(P,Q)$に対する\textbf{リュカの確率的素数（Lucas probable prime）}とする．
+\end{dfn}
+
+リュカの素数判定法で素数と誤って判定される合成数を\textbf{リュカの擬素数（Lucas pseudoprime）}という．
+また，$\{V_k\}$の式(\ref{eq:Vprime})についてのリュカの素数判定法で得られる確率的素数をリュカの$V$確率的素数（Lucas-V probable prime）と呼ぶ．
+これを使うと，計算量を悪化させることなくリュカの素数判定法の判定率を向上できる．
+しかし，現状はまだ使われていないので，このレポートでは紹介しない．
+
+リュカの素数判定法におけるパラメータ$(P,Q)$の選び方の一例を紹介する\cite{baillie2021strengthening,baillie1980lucas}．
+3つ目のステップが無くても，生成される擬素数は同じである．
+\begin{itemize}
+    \item $D$を$5, -7, 9, -11, 13, -15, \dots$という数列の中で$(D/n)=-1$を最初に満たす要素として選ぶ．
+    \item $P=1$, $Q=(1-D)/4$とする．
+    \item もし，$Q=-1$であれば，$P=Q=5$とする．
+\end{itemize}
+この方法を用いた場合，リュカの擬素数は$323, 377, 1159, 1829, 3827, 5459, 5777, 9071, 9179, 10877,\dots$となる．
+また，$10^{15}$以下のリュカの擬素数は$2{,}402{,}549$個である．
+
+フェルマーテストからミラー・ラビン素数判定法への強化と同じようにして，次の定理を用いてリュカの強確率的素数と強擬素数を定義する．
+
+\begin{thm}
+    $p$を素数とし，$p+1=2^sd$（ただし，$d$は奇数）と分解する．
+    リュカ数列$\{U_k\}, \{V_k\}$のパラメータを$\gcd(p,D)=1$\footnote{\cite{baillie2021strengthening}ではこの条件は付いていないが，\cite{baillie1980lucas}では付いている．}かつ$(D/p)=-1$となるように選択する．
+    このとき，次のいずれかのことが成立する．
+    \begin{itemize}
+        \item $U_d \equiv 0 \pmod{p}$が成り立つ．
+        \item $V_{d \cdot 2^r} \equiv 0 \pmod{p}$となる$0 \leq r < s$が存在する．
+    \end{itemize}
+\end{thm}
+
+\begin{dfn}[リュカの強素数判定法]
+    正の奇数$n$を素数判定の対象とする．
+    リュカ数列$\{U_k\}, \{V_k\}$のパラメータを$\gcd(n,D)=1$かつ$(D/n)=-1$となるように選択する．
+    このとき，$U_d \not\equiv 0 \pmod{n}$かつ任意の整数$r\in[0,s)$について$V_{d \cdot 2^r} \not\equiv 0 \pmod{n}$であれば合成数と判定する．
+    もし，成り立たなければ，パラメータ$(P,Q)$に対する\textbf{リュカの強確率的素数（strong Lucas probable prime）}とする．
+\end{dfn}
+
+リュカの強素数判定法をすり抜ける合成数を，パラメータ$(P,Q)$に対する\textbf{リュカの強擬素数（strong Lucas pseudoprime）}と呼ぶ．
+リュカの素数判定法と同様の方法でパラメータを選択した場合，リュカの強擬素数は$5459, 5777, 10877, 16109,
+ 18971, 22499, 24569, 25199, 40309, 58519, \dots$となる．また，$10^{15}$以下のリュカの強擬素数は$474{,}971$個であり，大幅に判定率が改善されていることがわかる．
+
+\subsection{Baillie-PSW素数判定法}
+
+\textbf{Baillie-PSW素数判定法}は，ミラー・ラビン素数判定法とリュカの強素数判定法を組み合わせた手法である．
+ミラー・ラビン素数判定法における強擬素数と，リュカの強擬素数は異なる数となる傾向がある．
+すなわち，両方の素数判定法をすり抜ける擬素数は極めて稀ということである．
+実際，$2^{64}$以下では擬素数が存在しないことが知られている．
+
+\begin{dfn}[Baillie-PSW素数判定法]
+    正の奇数$n$を素数判定の対象とする．
+    \begin{itemize}
+        \item 底2のミラー・ラビン素数判定法を行う．合成数であれば終了．
+        \item リュカの強素数判定法を行う．合成数であれば終了．そうでなければ，確率的素数として終了．
+    \end{itemize}
+\end{dfn}
+
+実用上，ミラー・ラビン素数判定法の前にしきい値$k$以下の素数で試し割り法を行うことが多い．
+また，この素数判定法は非常に効率的なので，多くのソフトウェアではこの方法が採用されている\cite{albrecht2018prime}．
+
+さきほど，Baillie-PSW素数判定法をすり抜ける合成数が極めて稀と述べたが，実際のところは未解決問題である．
+ヒューリスティックな解析によると，無数に擬素数は存在すると予想されているが不明である\cite{pomerance1984there}．
+もし，反例を見つけた場合は620ドルの賞金が手に入るようだ\footnote{
+文献によって書いている賞金額が違うので，実際にはもっと少ない可能性がある．
+\cite{baillie2021strengthening}では620ドル，\cite{pomerance1984there}では120ドルと書かれている．
+またwikipediaによると，620ドルは別の問題に対する賞金だという指摘もある．
+\\
+\url{https://en.wikipedia.org/wiki/Baillie-PSW_primality_test}
+}．
+
+\bibliographystyle{jplain}
+\bibliography{bpsw}
+
+\end{document}
